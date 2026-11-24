@@ -4,80 +4,327 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>每日安全漏洞文章聚合</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 <style>
-  :root { --bg:#0d1117; --panel:#161b22; --border:#30363d; --fg:#e6edf3; --dim:#8b949e; --accent:#58a6ff; }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:var(--bg); color:var(--fg); font:15px/1.7 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
-  header { padding:16px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
-  header h1 { font-size:18px; }
-  header .meta { color:var(--dim); font-size:13px; }
-  #search { margin-left:auto; background:var(--panel); border:1px solid var(--border); color:var(--fg);
-            padding:6px 12px; border-radius:6px; width:260px; outline:none; }
-  #search:focus { border-color:var(--accent); }
-  main { display:flex; min-height:calc(100vh - 61px); }
-  nav { width:220px; flex-shrink:0; border-right:1px solid var(--border); padding:12px 0; overflow-y:auto; }
-  nav .day { display:flex; justify-content:space-between; padding:8px 20px; cursor:pointer; color:var(--dim); font-size:14px; }
-  nav .day:hover { background:var(--panel); color:var(--fg); }
-  nav .day.active { background:var(--panel); color:var(--accent); border-right:2px solid var(--accent); }
-  nav .count { font-size:12px; background:var(--panel); border-radius:10px; padding:0 8px; }
-  article { flex:1; padding:24px 32px; max-width:960px; overflow-y:auto; }
-  article h1,article h2,article h3 { margin:18px 0 10px; border-bottom:1px solid var(--border); padding-bottom:6px; }
-  article h1 { font-size:20px; } article h2 { font-size:17px; } article h3 { font-size:15px; }
-  article a { color:var(--accent); text-decoration:none; } article a:hover { text-decoration:underline; }
-  article li { margin:4px 0; }
-  article blockquote { border-left:3px solid var(--border); padding-left:12px; color:var(--dim); }
-  article code { background:var(--panel); padding:1px 6px; border-radius:4px; font-size:13px; }
-  .empty { color:var(--dim); padding:60px 0; text-align:center; }
-  mark { background:#9e6a03; color:#fff; border-radius:2px; padding:0 2px; }
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --panel-hover: #f8f9fb;
+    --border: #e6e8eb;
+    --fg: #1f2329;
+    --dim: #7a828e;
+    --accent: #d92d20;
+    --accent-strong: #b42318;
+    --accent-soft: rgba(217, 45, 32, 0.07);
+    --focus-bg: #fff7ed;
+    --focus-border: #fed7aa;
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+    --mark-bg: #fde68a;
+    --mark-fg: #78350f;
+  }
+  [data-theme="dark"] {
+    --bg: #0e1116;
+    --panel: #171b22;
+    --panel-hover: #1d222b;
+    --border: #2a313c;
+    --fg: #e6e9ee;
+    --dim: #8b94a1;
+    --accent: #f97066;
+    --accent-strong: #fda29b;
+    --accent-soft: rgba(249, 112, 102, 0.1);
+    --focus-bg: rgba(251, 146, 60, 0.08);
+    --focus-border: rgba(251, 146, 60, 0.35);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --mark-bg: #854d0e;
+    --mark-fg: #fef08a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.75 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+
+  /* ===== 顶栏 ===== */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 12px 24px;
+    background: color-mix(in srgb, var(--panel) 82%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .logo {
+    width: 38px; height: 38px; flex-shrink: 0;
+    display: grid; place-items: center;
+    font-size: 20px;
+    color: #fff;
+    background: linear-gradient(135deg, #f04438, #b42318);
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(217, 45, 32, 0.35);
+  }
+  .brand h1 { font-size: 17px; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap; }
+  .brand .meta { font-size: 12.5px; color: var(--dim); margin-top: 1px; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .search-box { position: relative; }
+  .search-box svg {
+    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px; stroke: var(--dim); pointer-events: none;
+  }
+  #search {
+    width: 280px; max-width: 46vw;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    padding: 8px 12px 8px 34px;
+    border-radius: 999px;
+    outline: none;
+    font-size: 13.5px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.25s ease;
+  }
+  #search::placeholder { color: var(--dim); }
+  #search:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    background: var(--panel);
+  }
+  #theme-toggle {
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: border-color 0.15s ease, background 0.25s ease;
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+  /* ===== 主体布局 ===== */
+  main { display: flex; align-items: flex-start; max-width: 1200px; margin: 0 auto; padding: 24px; gap: 24px; }
+
+  /* 日期侧栏 */
+  nav {
+    width: 216px; flex-shrink: 0;
+    position: sticky; top: 86px;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 10px;
+  }
+  nav .nav-title {
+    font-size: 12px; font-weight: 600; color: var(--dim);
+    letter-spacing: 0.08em; padding: 6px 10px 8px;
+  }
+  nav .day {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 10px;
+    border-radius: 9px;
+    cursor: pointer;
+    color: var(--dim);
+    border-left: 3px solid transparent;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  nav .day:hover { background: var(--panel-hover); color: var(--fg); }
+  nav .day.active { background: var(--accent-soft); color: var(--accent); border-left-color: var(--accent); }
+  nav .day .d { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  nav .day .w { font-size: 12px; }
+  nav .day .count {
+    margin-left: auto;
+    font-size: 11.5px; font-weight: 600;
+    background: var(--bg); color: var(--dim);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0 8px; line-height: 19px;
+    font-variant-numeric: tabular-nums;
+  }
+  nav .day.active .count { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* 文章正文 */
+  article {
+    flex: 1; min-width: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 32px 36px 40px;
+  }
+  article h1 { font-size: 23px; font-weight: 800; letter-spacing: 0.01em; margin-bottom: 6px; }
+  article > p:first-of-type { color: var(--dim); font-size: 13.5px; margin-bottom: 22px; }
+
+  article h2.source-head {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 16.5px; font-weight: 700;
+    margin: 30px 0 6px; padding-top: 22px;
+    border-top: 1px solid var(--border);
+  }
+  article h2.source-head .src-name { display: flex; align-items: center; gap: 8px; }
+  article h2.source-head .src-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  article h2.source-head .src-count {
+    font-size: 12px; font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: 1px 10px;
+  }
+
+  /* 重点关注卡片 */
+  .focus-card {
+    background: var(--focus-bg);
+    border: 1px solid var(--focus-border);
+    border-radius: 12px;
+    padding: 16px 18px 14px;
+    margin: 18px 0 4px;
+  }
+  .focus-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15.5px; font-weight: 700;
+    color: var(--accent-strong);
+    margin-bottom: 6px;
+  }
+  .focus-title .focus-count {
+    font-size: 12px; font-weight: 600;
+    color: #fff; background: var(--accent);
+    border-radius: 999px; padding: 1px 9px;
+  }
+
+  /* 文章列表 */
+  article ul { list-style: none; counter-reset: item; }
+  article ul li {
+    counter-increment: item;
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    transition: background 0.12s ease;
+  }
+  article ul li:hover { background: var(--panel-hover); }
+  article ul li::before {
+    content: counter(item, decimal-leading-zero);
+    font-size: 12px; font-weight: 600;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    position: relative; top: -1px;
+  }
+  article a { color: var(--fg); text-decoration: none; border-bottom: 1px solid transparent; transition: color 0.12s ease; }
+  article a:hover { color: var(--accent); }
+  article a::after { content: "↗"; font-size: 11px; color: var(--dim); margin-left: 4px; opacity: 0; transition: opacity 0.12s ease; }
+  article ul li:hover a::after { opacity: 1; }
+  article blockquote { border-left: 3px solid var(--border); padding-left: 12px; color: var(--dim); margin: 10px 0; }
+  article code { background: var(--bg); border: 1px solid var(--border); padding: 1px 6px; border-radius: 5px; font-size: 13px; }
+
+  .empty { color: var(--dim); padding: 72px 0; text-align: center; line-height: 2; }
+  .result-info { font-size: 13px; color: var(--accent); margin: 0 0 14px; font-weight: 600; }
+  mark { background: var(--mark-bg); color: var(--mark-fg); border-radius: 3px; padding: 0 2px; }
+
+  footer { text-align: center; color: var(--dim); font-size: 12.5px; padding: 26px 0 34px; }
+  footer a { color: var(--dim); }
+
+  /* 移动端 */
+  @media (max-width: 860px) {
+    main { flex-direction: column; padding: 14px; gap: 14px; }
+    nav {
+      width: 100%; position: static; max-height: none;
+      display: flex; gap: 6px; overflow-x: auto; padding: 8px;
+    }
+    nav .nav-title { display: none; }
+    nav .day { flex-shrink: 0; border-left: none; border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; }
+    nav .day.active { border-color: var(--accent); }
+    nav .day .w { display: none; }
+    nav .day .count { margin-left: 4px; border: none; background: transparent; padding: 0; }
+    article { padding: 22px 18px 28px; }
+    #search { width: 180px; }
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>🛡️ 每日安全漏洞文章聚合</h1>
-  <span class="meta" id="meta">加载中…</span>
-  <input id="search" type="search" placeholder="搜索标题 / 关键词（如 RCE、未授权）">
+  <div class="brand">
+    <div class="logo">🛡️</div>
+    <div>
+      <h1>每日安全漏洞文章聚合</h1>
+      <div class="meta" id="meta">加载中…</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="搜索标题 / 关键词（如 RCE、未授权）">
+    </div>
+    <button id="theme-toggle" title="切换明暗主题" aria-label="切换明暗主题">🌙</button>
+  </div>
 </header>
 <main>
   <nav id="days"></nav>
   <article id="content" class="empty">正在加载…</article>
 </main>
+<footer>数据来自 <a href="https://github.com/wy876/SecAlerts" target="_blank" rel="noopener">SecAlerts</a> · 由 Automation 每日自动更新</footer>
 <script>
 const $days = document.getElementById('days');
 const $content = document.getElementById('content');
 const $meta = document.getElementById('meta');
 const $search = document.getElementById('search');
+const $toggle = document.getElementById('theme-toggle');
 let days = [], current = null, rawMd = '';
+
+/* 主题 */
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  $toggle.textContent = t === 'dark' ? '☀️' : '🌙';
+}
+const savedTheme = localStorage.getItem('theme');
+applyTheme(savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+$toggle.onclick = () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', next);
+  applyTheme(next);
+};
+
+const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
 async function boot() {
   try {
     const idx = await (await fetch('archive/index.json?_=' + Date.now())).json();
-    days = (idx.days || []).slice().sort((a,b) => b.date.localeCompare(a.date));
+    days = (idx.days || []).slice().sort((a, b) => b.date.localeCompare(a.date));
   } catch { days = []; }
   if (!days.length) {
-    $meta.textContent = '';
+    $meta.textContent = '暂无数据';
     $content.innerHTML = '<div class="empty">暂无数据<br><small>等待 Automation 首次运行后自动提交</small></div>';
     return;
   }
   $meta.textContent = '共 ' + days.length + ' 天 · 最近更新 ' + days[0].date;
+  const navTitle = document.createElement('div');
+  navTitle.className = 'nav-title';
+  navTitle.textContent = '归档日期';
+  $days.appendChild(navTitle);
   renderDays();
   load(days[0].date);
 }
 
 function renderDays() {
-  $days.innerHTML = '';
+  $days.querySelectorAll('.day').forEach(el => el.remove());
   for (const d of days) {
+    const wd = WEEKDAYS[new Date(d.date + 'T00:00:00Z').getUTCDay()];
     const el = document.createElement('div');
     el.className = 'day' + (d.date === current ? ' active' : '');
-    el.innerHTML = '<span>' + d.date + '</span><span class="count">' + (d.total ?? '') + '</span>';
+    el.innerHTML = '<span class="d">' + d.date + '</span><span class="w">' + wd + '</span><span class="count">' + (d.total ?? '') + '</span>';
     el.onclick = () => load(d.date);
     $days.appendChild(el);
   }
 }
 
 async function load(date) {
-  current = date; renderDays();
+  current = date;
+  renderDays();
   $content.innerHTML = '<div class="empty">加载中…</div>';
   try {
     rawMd = await (await fetch('archive/' + date + '.md?_=' + Date.now())).text();
@@ -87,24 +334,58 @@ async function load(date) {
   }
 }
 
+/* 解析后的 HTML 做结构化：重点关注卡片 + 来源标题徽章 */
+function decorate() {
+  const h2s = [...$content.querySelectorAll('h2')];
+  for (const h2 of h2s) {
+    const text = h2.textContent;
+    if (text.includes('重点关注')) {
+      const ul = h2.nextElementSibling;
+      const n = ul && ul.tagName === 'UL' ? ul.children.length : 0;
+      const card = document.createElement('div');
+      card.className = 'focus-card';
+      card.innerHTML = '<div class="focus-title">🔥 重点关注 <span class="focus-count">' + n + ' 篇</span></div>';
+      h2.replaceWith(card);
+      if (ul && ul.tagName === 'UL') card.appendChild(ul);
+    } else {
+      const m = text.match(/^来源：(.+?)（(\d+)\s*篇）$/);
+      if (m) {
+        h2.classList.add('source-head');
+        h2.innerHTML = '<span class="src-name"><span class="src-dot"></span>' + m[1] + '</span><span class="src-count">' + m[2] + ' 篇</span>';
+      }
+    }
+  }
+  $content.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+}
+
 function render() {
   const q = $search.value.trim();
-  let md = rawMd;
+  let md = rawMd, info = '';
   if (q) {
     const terms = q.toLowerCase().split(/\s+/);
+    let matched = 0;
     md = rawMd.split('\n').map(line => {
       if (!/^\s*[-*]\s+/.test(line)) return line;
-      const low = line.toLowerCase();
-      return terms.every(t => low.includes(t)) ? line : '';
-    }).filter((l,i,arr) => l !== '' || (arr[i-1] && arr[i-1] !== '')).join('\n');
+      const hit = terms.every(t => line.toLowerCase().includes(t));
+      if (hit) matched++;
+      return hit ? line : '';
+    }).filter((l, i, arr) => l !== '' || (arr[i - 1] && arr[i - 1] !== '')).join('\n');
+    info = matched ? '匹配到 ' + matched + ' 篇文章' : '没有匹配的文章';
   }
   let html = DOMPurify.sanitize(marked.parse(md));
-  if (q) html = html.replace(new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').split(/\s+/).join('|') + ')','gi'), '<mark>$1</mark>');
+  if (q) {
+    const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').split(/\s+/).join('|');
+    html = html.replace(new RegExp('(' + esc + ')', 'gi'), '<mark>$1</mark>');
+  }
   $content.className = '';
-  $content.innerHTML = html;
+  $content.innerHTML = (info ? '<p class="result-info">' + info + '</p>' : '') + html;
+  decorate();
 }
 
 $search.addEventListener('input', () => { if (current) render(); });
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== $search) { e.preventDefault(); $search.focus(); }
+});
 boot();
 </script>
 </body>

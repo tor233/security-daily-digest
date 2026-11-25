@@ -84,3 +84,14 @@ https://mrxn.net/jswz/youjiasoft-Sys-GetChildInfo-sqli.html
 https://mrxn.net/jswz/youjiasoft-env-setup-2.html
 https://mrxn.net/jswz/youjiasoft-Sysconfig-GetZtnameSet-file-read.html
 https://mrxn.net/jswz/youjiasoft-Sysconfig-downloadzt-sqli.html
+https://mp.weixin.qq.com/s?__biz=Mzg5MTc3ODY4Mw==&mid=2247509104&idx=1&sn=4640736488dc2811dcad0757e475a21c
+https://mp.weixin.qq.com/s?__biz=MjM5NTc2MDYxMw==&mid=2458624469&idx=2&sn=b7a0d3b9967279314e6416742e39397f
+https://mp.weixin.qq.com/s?__biz=MjM5NzE1NjA0MQ==&mid=2651208868&idx=1&sn=a784a77357bcfeea2e0e2b80ff5665f5
+https://mp.weixin.qq.com/s?__biz=MzI2NTg4OTc5Nw==&mid=2247527816&idx=2&sn=c384a37aad4ccd136309edfc3da08093
+https://mp.weixin.qq.com/s?__biz=MzI2NTg4OTc5Nw==&mid=2247527816&idx=1&sn=fc71ab4b2e1407d56091d3c0684c89c4
+https://mp.weixin.qq.com/s?__biz=MzU5MTM5MTQ2MA==&mid=2247496214&idx=1&sn=3e7d9e8d30bda4ee4fa07cf76cbcd34a
+https://mp.weixin.qq.com/s?__biz=MzU5NDgxODU1MQ==&mid=2247508259&idx=1&sn=33a6c21c2746e38d682fa7972dea6c4d
+https://mp.weixin.qq.com/s?__biz=MzU5NDgxODU1MQ==&mid=2247508234&idx=1&sn=7f9534cb79b4aa41a20b65b20ee6d3f3
+https://mp.weixin.qq.com/s?__biz=MzIxMjEwNTc4NA==&mid=2652999174&idx=1&sn=47a13956a84aba2fe054d0bfd49f9ec7
+https://mp.weixin.qq.com/s?__biz=MzU3ODM2NTg2Mg==&mid=2247497544&idx=2&sn=cd8a3646334adf8761ecf531eea1b61c
+https://mp.weixin.qq.com/s?__biz=MzU3ODM2NTg2Mg==&mid=2247497544&idx=1&sn=7123ccaaf1095a7659a21f63dbc0013d
